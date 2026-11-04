@@ -10,10 +10,15 @@ const STORIES = [
   "/img/figurinhas/figurinha-3.jpg",
   "/img/figurinhas/figurinha-4.jpg",
   "/img/figurinhas/figurinha-5.jpg",
+  "/img/figurinhas/figurinha-6.jpg",
+  "/img/figurinhas/figurinha-7.jpg",
+  "/img/figurinhas/figurinha-8.jpg",
+  "/img/figurinhas/figurinha-9.jpg",
+  "/img/figurinhas/figurinha-10.jpg",
 ];
 
 export default function Carousel() {
-  const [current, setCurrent] = useState(2);
+  const [current, setCurrent] = useState(4);
   const [paused, setPaused] = useState(false);
   const [offset, setOffset] = useState(0);
   const wrapRef = useRef<HTMLDivElement>(null);
