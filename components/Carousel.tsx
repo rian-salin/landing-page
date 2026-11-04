@@ -3,11 +3,17 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import ImageSlot from "./ImageSlot";
 
-// Troque/adicione arquivos em public/img/story-1.jpg ... story-9.jpg
-const STORIES = Array.from({ length: 9 }, (_, i) => `/img/story-${i + 1}.jpg`);
+// Para adicionar mais figurinhas: coloque o arquivo em public/img/figurinhas/ e inclua o caminho aqui
+const STORIES = [
+  "/img/figurinhas/figurinha-1.webp",
+  "/img/figurinhas/figurinha-2.webp",
+  "/img/figurinhas/figurinha-3.jpg",
+  "/img/figurinhas/figurinha-4.jpg",
+  "/img/figurinhas/figurinha-5.jpg",
+];
 
 export default function Carousel() {
-  const [current, setCurrent] = useState(4);
+  const [current, setCurrent] = useState(2);
   const [paused, setPaused] = useState(false);
   const [offset, setOffset] = useState(0);
   const wrapRef = useRef<HTMLDivElement>(null);
@@ -18,8 +24,8 @@ export default function Carousel() {
     const wrap = wrapRef.current;
     const slide = trackRef.current?.children[current] as HTMLElement | undefined;
     if (!wrap || !slide) return;
-    // Slide ativo cresce para 155px durante a transição; usamos a largura final
-    const activeWidth = 155;
+    // Slide ativo cresce para 220px durante a transição; usamos a largura final
+    const activeWidth = 220;
     setOffset(slide.offsetLeft + activeWidth / 2 - wrap.clientWidth / 2);
   }, [current]);
 
@@ -49,8 +55,8 @@ export default function Carousel() {
             <ImageSlot
               key={src}
               src={src}
-              alt={`Exemplo de story ${i + 1}`}
-              label={`story ${i + 1}`}
+              alt={`Figurinha ${i + 1}`}
+              label={`figurinha ${i + 1}`}
               className={`slide ${i === current ? "active" : ""}`}
               onClick={() => setCurrent(i)}
             />
@@ -61,7 +67,7 @@ export default function Carousel() {
         {STORIES.map((_, i) => (
           <button
             key={i}
-            aria-label={`Ir para story ${i + 1}`}
+            aria-label={`Ir para figurinha ${i + 1}`}
             className={i === current ? "active" : ""}
             onClick={() => setCurrent(i)}
           />

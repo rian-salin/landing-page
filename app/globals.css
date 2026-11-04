@@ -17,6 +17,7 @@ ul{list-style:none}
 /* Placeholder de imagem */
 .img-slot{position:relative;background:linear-gradient(135deg,#2b2b55,#1a1a3e);border-radius:14px;overflow:hidden;display:flex;align-items:center;justify-content:center}
 .img-slot::after{content:attr(data-label);white-space:pre-line;position:absolute;color:#ffffff66;font-size:12px;text-align:center;padding:8px;z-index:0}
+.img-slot:has(img)::after{display:none}
 .img-slot img{position:relative;z-index:1;width:100%;height:100%;object-fit:cover;display:block}
 
 /* Botões */
@@ -54,10 +55,11 @@ h2{font-size:26px;font-weight:700;text-align:center;margin-bottom:10px}
 .card p{font-size:11px;color:var(--muted)}
 
 /* Carrossel */
-.carousel{overflow:hidden;margin:0 0 20px;padding:20px 0}
+.carousel{overflow:hidden;margin:0 0 10px;padding:30px 0 40px}
 .carousel__track{display:flex;gap:16px;transition:transform .5s ease;width:max-content;align-items:center}
-.slide{width:120px;height:215px;border-radius:12px;flex:none;cursor:pointer;opacity:.55;filter:grayscale(.4);transition:all .4s}
-.slide.active{width:155px;height:280px;opacity:1;filter:none;box-shadow:0 14px 34px #1a1a3e40}
+.slide{width:150px;height:150px;border-radius:14px;flex:none;cursor:pointer;opacity:.5;transform:scale(.95);transition:all .4s;background:#0b0b0b}
+.slide img{object-fit:contain;padding:8px}
+.slide.active{width:220px;height:220px;opacity:1;transform:none;box-shadow:0 14px 34px #1a1a3e40}
 .dots{display:flex;justify-content:center;gap:6px;margin-bottom:26px}
 .dots button{width:6px;height:6px;border-radius:99px;border:0;background:#cfcfdc;cursor:pointer;transition:all .3s}
 .dots button.active{width:20px;background:var(--pink)}
