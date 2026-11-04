@@ -98,7 +98,7 @@ export default function Home() {
       {/* CARROSSEL */}
       <section className="section section--gray">
         <div className="container">
-          <h2>Veja Como Seus Stories Podem Ficar</h2>
+          <h2>Veja algumas figurinhas que você irá receber</h2>
           <p className="sub">Esqueça os textos sem graça. Adicione personalidade em cada postagem.</p>
         </div>
         <Carousel />
