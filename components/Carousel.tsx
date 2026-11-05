@@ -17,67 +17,117 @@ const STORIES = [
   "/img/figurinhas/figurinha-10.jpg",
 ];
 
+const AUTOPLAY_MS = 3500;
+
+/**
+ * Carrossel com rolagem nativa (scroll-snap): funciona com swipe no celular,
+ * trackpad, teclado e botões. A figurinha mais perto do centro fica em destaque.
+ */
 export default function Carousel() {
-  const [current, setCurrent] = useState(4);
-  const [paused, setPaused] = useState(false);
-  const [offset, setOffset] = useState(0);
-  const wrapRef = useRef<HTMLDivElement>(null);
-  const trackRef = useRef<HTMLDivElement>(null);
+  const [current, setCurrent] = useState(0);
+  const currentRef = useRef(0);
+  const trackRef = useRef<HTMLUListElement>(null);
+  const pausedRef = useRef(false);
+  const resumeTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
 
-  // Calcula o deslocamento para centralizar o slide ativo
-  const recenter = useCallback(() => {
-    const wrap = wrapRef.current;
-    const slide = trackRef.current?.children[current] as HTMLElement | undefined;
-    if (!wrap || !slide) return;
-    // Slide ativo cresce para 220px durante a transição; usamos a largura final
-    const activeWidth = 220;
-    setOffset(slide.offsetLeft + activeWidth / 2 - wrap.clientWidth / 2);
-  }, [current]);
+  const goTo = useCallback((i: number) => {
+    const track = trackRef.current;
+    const slide = track?.children[i] as HTMLElement | undefined;
+    if (!track || !slide) return;
+    const left = slide.offsetLeft + slide.offsetWidth / 2 - track.clientWidth / 2;
+    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    track.scrollTo({ left, behavior: reduce ? "auto" : "smooth" });
+  }, []);
 
+  // Descobre qual figurinha está no centro enquanto rola
   useEffect(() => {
-    recenter();
-    window.addEventListener("resize", recenter);
-    return () => window.removeEventListener("resize", recenter);
-  }, [recenter]);
+    const track = trackRef.current;
+    if (!track) return;
+    let frame = 0;
+    const onScroll = () => {
+      cancelAnimationFrame(frame);
+      frame = requestAnimationFrame(() => {
+        const center = track.scrollLeft + track.clientWidth / 2;
+        let best = 0;
+        let bestDist = Infinity;
+        Array.from(track.children).forEach((el, i) => {
+          const s = el as HTMLElement;
+          const d = Math.abs(s.offsetLeft + s.offsetWidth / 2 - center);
+          if (d < bestDist) { bestDist = d; best = i; }
+        });
+        currentRef.current = best;
+        setCurrent(best);
+      });
+    };
+    onScroll();
+    track.addEventListener("scroll", onScroll, { passive: true });
+    return () => { track.removeEventListener("scroll", onScroll); cancelAnimationFrame(frame); };
+  }, []);
 
-  // Autoplay (pausa quando o mouse está em cima)
+  // Autoplay: pausa quando a pessoa interage, quando a aba está escondida
+  // e não roda para quem pediu menos movimento no sistema
   useEffect(() => {
-    if (paused) return;
-    const id = setInterval(() => setCurrent((c) => (c + 1) % STORIES.length), 3500);
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    const id = setInterval(() => {
+      if (pausedRef.current || document.hidden) return;
+      goTo((currentRef.current + 1) % STORIES.length);
+    }, AUTOPLAY_MS);
     return () => clearInterval(id);
-  }, [paused]);
+  }, [goTo]);
+
+  const pause = () => { clearTimeout(resumeTimer.current); pausedRef.current = true; };
+  const resumeLater = (ms = 0) => {
+    clearTimeout(resumeTimer.current);
+    resumeTimer.current = setTimeout(() => { pausedRef.current = false; }, ms);
+  };
+
+  const step = (dir: 1 | -1) => goTo((current + dir + STORIES.length) % STORIES.length);
 
   return (
-    <>
-      <div
-        className="carousel"
-        ref={wrapRef}
-        onMouseEnter={() => setPaused(true)}
-        onMouseLeave={() => setPaused(false)}
-      >
-        <div className="carousel__track" ref={trackRef} style={{ transform: `translateX(${-offset}px)` }}>
-          {STORIES.map((src, i) => (
-            <ImageSlot
-              key={src}
-              src={src}
-              alt={`Figurinha ${i + 1}`}
-              label={`figurinha ${i + 1}`}
-              className={`slide ${i === current ? "active" : ""}`}
-              onClick={() => setCurrent(i)}
+    <div
+      className="carousel"
+      role="region"
+      aria-roledescription="carrossel"
+      aria-label="Exemplos de figurinhas"
+      onPointerEnter={pause}
+      onPointerLeave={() => resumeLater()}
+      onFocus={pause}
+      onBlur={() => resumeLater()}
+      onTouchStart={pause}
+      onTouchEnd={() => resumeLater(6000)}
+    >
+      <ul className="carousel__track" ref={trackRef} tabIndex={0} aria-label="Use as setas para rolar">
+        {STORIES.map((src, i) => (
+          <li
+            key={src}
+            className={`slide ${i === current ? "is-active" : ""}`}
+            onClick={() => goTo(i)}
+            aria-label={`Figurinha ${i + 1} de ${STORIES.length}`}
+          >
+            <ImageSlot src={src} alt={`Exemplo de figurinha ${i + 1}`} label={`figurinha ${i + 1}`} />
+          </li>
+        ))}
+      </ul>
+
+      <div className="carousel__controls">
+        <button type="button" className="carousel__arrow" onClick={() => step(-1)} aria-label="Figurinha anterior">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7" /></svg>
+        </button>
+        <div className="dots">
+          {STORIES.map((_, i) => (
+            <button
+              type="button"
+              key={i}
+              aria-label={`Ver figurinha ${i + 1}`}
+              aria-current={i === current || undefined}
+              onClick={() => goTo(i)}
             />
           ))}
         </div>
+        <button type="button" className="carousel__arrow" onClick={() => step(1)} aria-label="Próxima figurinha">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7" /></svg>
+        </button>
       </div>
-      <div className="dots">
-        {STORIES.map((_, i) => (
-          <button
-            key={i}
-            aria-label={`Ir para figurinha ${i + 1}`}
-            className={i === current ? "active" : ""}
-            onClick={() => setCurrent(i)}
-          />
-        ))}
-      </div>
-    </>
+    </div>
   );
 }

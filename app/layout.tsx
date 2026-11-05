@@ -1,20 +1,24 @@
-import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import type { Metadata, Viewport } from "next";
+import { Figtree, Shrikhand } from "next/font/google";
 import "./globals.css";
 
-// next/font baixa a fonte no build e serve do próprio site (mais rápido, sem layout shift)
-const inter = Inter({ subsets: ["latin"], weight: ["400", "500", "600", "700", "800"] });
+// next/font baixa as fontes no build e serve do próprio site (mais rápido, sem layout shift)
+// Shrikhand: letreiro de confeitaria, só nos títulos e preços. Figtree: texto corrido.
+const display = Shrikhand({ subsets: ["latin"], weight: "400", variable: "--font-display" });
+const body = Figtree({ subsets: ["latin"], variable: "--font-body" });
 
 export const metadata: Metadata = {
-  title: "+15.000 Figurinhas para Stories | Pack de Figurinhas",
+  title: "+140 Figurinhas para Confeiteiras | Pack de Figurinhas",
   description:
-    "Transforme seus stories comuns em conteúdos absurdamente bonitos e profissionais em segundos.",
+    "Figurinhas exclusivas para confeiteiras: transforme seus Stories em vitrines irresistíveis.",
 };
+
+export const viewport: Viewport = { themeColor: "#FDE5EE" };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="pt-BR">
-      <body className={inter.className}>{children}</body>
+    <html lang="pt-BR" className={`${display.variable} ${body.variable}`}>
+      <body>{children}</body>
     </html>
   );
 }

@@ -7,14 +7,14 @@ type Props = {
   alt: string;
   label: string; // texto exibido enquanto a imagem não existir
   className?: string;
-  onClick?: () => void;
+  priority?: boolean; // true só para a imagem do topo (carrega na hora)
 };
 
 /**
  * Mostra a imagem de /public. Se o arquivo ainda não existir,
  * exibe um placeholder com o nome do arquivo esperado.
  */
-export default function ImageSlot({ src, alt, label, className = "", onClick }: Props) {
+export default function ImageSlot({ src, alt, label, className = "", priority }: Props) {
   const [failed, setFailed] = useState(false);
   const imgRef = useRef<HTMLImageElement>(null);
 
@@ -26,10 +26,18 @@ export default function ImageSlot({ src, alt, label, className = "", onClick }: 
   }, []);
 
   return (
-    <div className={`img-slot ${className}`} data-label={`${label}\n${src}`} onClick={onClick}>
+    <div className={`img-slot ${className}`} data-label={`${label}\n${src}`}>
       {!failed && (
         // eslint-disable-next-line @next/next/no-img-element
-        <img ref={imgRef} src={src} alt={alt} onError={() => setFailed(true)} />
+        <img
+          ref={imgRef}
+          src={src}
+          alt={alt}
+          loading={priority ? "eager" : "lazy"}
+          fetchPriority={priority ? "high" : "auto"}
+          decoding="async"
+          onError={() => setFailed(true)}
+        />
       )}
     </div>
   );
